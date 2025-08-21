@@ -5,7 +5,7 @@ export default function Register() {
   const handleRegister = async (formData) => {
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/accounts/create',
+        'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/accounts/create',
         formData
       );
 

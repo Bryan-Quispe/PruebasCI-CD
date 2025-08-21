@@ -1,5 +1,5 @@
 export async function loginUser(credentials) {
-  const response = await fetch('http://localhost:3000/api/accounts/login', {
+  const response = await fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/accounts/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),

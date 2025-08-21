@@ -129,4 +129,4 @@ jobs:
         run: |
           echo "🎉 FLUJO COMPLETADO EXITOSAMENTE"
           echo "📋 CI: ✅ PASÓ"
-          echo "🚀 CD: ✅ DEPLOY COMPLETADO"
+          echo "🚀 CD: ✅ DEPLOY COMPLETADO"  
