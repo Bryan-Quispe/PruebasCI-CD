@@ -26,7 +26,6 @@ jobs:
 
       - name: Run tests with coverage (Vitest)
         run: npx vitest run --coverage 
-        # ✅ SI los tests fallan, el job falla automáticamente
 
       - name: Upload coverage report frontend
         uses: actions/upload-artifact@v4
@@ -36,41 +35,44 @@ jobs:
 
   deploy-prod:
     needs: frontend-tests
-    # ✅ CONDICIÓN CRÍTICA: Solo si ES main y los tests PASARON
     if: github.ref == 'refs/heads/main' && needs.frontend-tests.result == 'success'
     runs-on: ubuntu-latest
     environment: Production
     name: Deploy to Production
     
     steps:
-      - name: Verificar estado del CI
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Verificar token de Vercel
         run: |
-          echo "✅ EL CI PASÓ EXITOSAMENTE"
-          echo "📋 Resultado de tests: ${{ needs.frontend-tests.result }}"
-          echo "🎯 Rama: ${{ github.ref }}"
-          echo "🚀 Procediendo con deploy..."
-          
-      - name: Trigger Vercel Deployment
-        run: |
-          echo "🔗 Ejecutando Deploy Hook de Vercel..."
-          response_code=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST "${{ secrets.VERCEL_HOOK_PROD }}")
-          
-          echo "📊 Código de respuesta HTTP: $response_code"
-          
-          if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
-            echo "✅ DEPLOY INICIADO CORRECTAMENTE"
-            echo "📝 Respuesta de Vercel:"
-            cat /tmp/response.txt
-          else
-            echo "❌ ERROR: Deploy falló con código HTTP $response_code"
-            echo "📝 Respuesta:"
-            cat /tmp/response.txt
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "❌ ERROR: El token VERCEL_TOKEN no está configurado"
             exit 1
+          else
+            echo "✅ Token VERCEL_TOKEN encontrado"
           fi
+
+      - name: Deploy a Producción con Vercel CLI
+        run: |
+          echo "🚀 Iniciando deploy con Vercel CLI..."
+          cd frontend  # Cambia al directorio de tu frontend
+          
+          # Desplegar a producción
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --confirm
+          
+          echo "✅ Deploy completado exitosamente"
 
       - name: Confirmación final
         run: |
           echo "🎉 FLUJO COMPLETADO EXITOSAMENTE"
           echo "📋 CI: ✅ PASÓ"
-          echo "🚀 CD: ✅ DEPLOY INICIADO"
-          echo "⏳ El deploy puede tardar unos minutos en completarse en Vercel..."
+          echo "🚀 CD: ✅ DEPLOY COMPLETADO"
