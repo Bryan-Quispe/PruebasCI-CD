@@ -63,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: frontend/build.tar.gz # 👈 corregido, ruta completa
+          path: frontend/build.tar.gz # 👈 correcto, desde dentro de working-directory
 
   deploy-prod:
     needs: [frontend-tests, build-frontend]
@@ -80,7 +80,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          path: . # lo descarga a la raíz del job
+          path: . # se descarga como ./build.tar.gz
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
@@ -101,7 +101,7 @@ jobs:
         run: |
           mkdir -p deploy-dist
           tar -xzf build.tar.gz -C deploy-dist/
-          echo "Build descomprimido"
+          echo "Build descomprimido en deploy-dist/"
 
       - name: Deploy usando la API de Vercel
         run: |
