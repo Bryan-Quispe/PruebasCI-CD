@@ -54,11 +54,16 @@ jobs:
       - name: Build del proyecto
         run: npm run build
 
+      - name: Comprimir build para deploy
+        run: |
+          tar -czf build.tar.gz dist/
+          echo "Build comprimido creado"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: frontend/dist
+          path: frontend/build.tar.gz
 
   deploy-prod:
     needs: [frontend-tests, build-frontend]
@@ -71,43 +76,56 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Descargar build artifacts
+      - name: Descargar build
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          path: frontend/dist
+          path: .
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Instalar Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Verificar token de Vercel
+      - name: Verificar URL de deploy
         run: |
-          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
-            echo "❌ ERROR: El token VERCEL_TOKEN no está configurado"
+          if [ -z "${{ secrets.VERCEL_DEPLOY_URL }}" ]; then
+            echo "❌ ERROR: La URL de deploy no está configurada"
             exit 1
           else
-            echo "✅ Token VERCEL_TOKEN encontrado"
+            echo "✅ URL de deploy encontrada"
+            echo "URL: ${{ secrets.VERCEL_DEPLOY_URL }}"
           fi
 
-      - name: Deploy a Producción con Vercel
+      - name: Descomprimir build
         run: |
-          echo "🚀 Iniciando deploy con Vercel..."
-          cd frontend
-          
-          # Opción 1: Deploy con build explícito (RECOMENDADO)
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --confirm
-          
-          # Opción 2: Forzar redeploy completo
-          # vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --force
-          
-          echo "✅ Deploy completado exitosamente"
+          mkdir -p deploy-dist
+          tar -xzf frontend-build/build.tar.gz -C deploy-dist/
+          echo "Build descomprimido"
 
-      - name: Verificar deploy
+      - name: Deploy usando la API de Vercel
+        run: |
+          echo "🚀 Iniciando deploy via API de Vercel..."
+          
+          # Crear un zip del directorio de build
+          cd deploy-dist
+          zip -r ../deploy.zip .
+          cd ..
+          
+          # Hacer el deploy usando la URL de integración
+          curl -f -X POST \
+            -H "Content-Type: application/zip" \
+            --data-binary "@deploy.zip" \
+            "${{ secrets.VERCEL_DEPLOY_URL }}"
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Deploy completado exitosamente via API"
+          else
+            echo "❌ Error en el deploy via API"
+            exit 1
+          fi
+
+      - name: Confirmación final
         run: |
           echo "🎉 FLUJO COMPLETADO EXITOSAMENTE"
           echo "📋 CI: ✅ PASÓ"
