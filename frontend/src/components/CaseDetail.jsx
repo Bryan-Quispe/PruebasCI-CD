@@ -1,11 +1,7 @@
 function CaseDetail() {
   return (
     <div>
-      <h2>Detalle del caso</h2>
-      <h1></h1>
-      <h1></h1>
-      <h1></h1>
-      <h1></h1>
+      <h2>caso</h2>
     </div>
   );
 }
