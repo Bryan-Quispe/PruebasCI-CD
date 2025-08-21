@@ -33,8 +33,35 @@ jobs:
           name: coverage-frontend
           path: frontend/coverage
 
-  deploy-prod:
+  build-frontend:
     needs: frontend-tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Build del proyecto
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
+
+  deploy-prod:
+    needs: [frontend-tests, build-frontend]
     if: github.ref == 'refs/heads/main' && needs.frontend-tests.result == 'success'
     runs-on: ubuntu-latest
     environment: Production
@@ -43,6 +70,12 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
+
+      - name: Descargar build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
@@ -61,17 +94,20 @@ jobs:
             echo "✅ Token VERCEL_TOKEN encontrado"
           fi
 
-      - name: Deploy a Producción con Vercel CLI
+      - name: Deploy a Producción con Vercel
         run: |
-          echo "🚀 Iniciando deploy con Vercel CLI..."
-          cd frontend  # Cambia al directorio de tu frontend
+          echo "🚀 Iniciando deploy con Vercel..."
+          cd frontend
           
-          # Desplegar a producción
+          # Opción 1: Deploy con build explícito (RECOMENDADO)
           vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --confirm
+          
+          # Opción 2: Forzar redeploy completo
+          # vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --force
           
           echo "✅ Deploy completado exitosamente"
 
-      - name: Confirmación final
+      - name: Verificar deploy
         run: |
           echo "🎉 FLUJO COMPLETADO EXITOSAMENTE"
           echo "📋 CI: ✅ PASÓ"
