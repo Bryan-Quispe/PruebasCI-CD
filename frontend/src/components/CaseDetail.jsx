@@ -1,7 +1,7 @@
 function CaseDetail() {
   return (
     <div>
-      <h2>caso</h2>
+      <h2>Detalle del caso</h2>
     </div>
   );
 }
