@@ -61,7 +61,7 @@ export default function LoginForm() {
       {/* Enlace para ir a registrar */}
       <div className="text-center mt-3">
         <a href="/register" className="text-blue-400 hover:underline text-sm">
-          ¿No tienes cuenta? Regístrate aquí :3
+          ¿No tienes cuenta? Regístrate aquí :3 uwu
         </a>
       </div>
     </form>
