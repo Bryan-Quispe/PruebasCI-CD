@@ -25,7 +25,7 @@ function DashboardUsuario() {
     if (!auth?.token) return;
 
     // Obtener procesos
-  fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes', {
+    fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes', {
       headers: {
         Authorization: `Bearer ${auth.token}`,
       },
@@ -56,11 +56,14 @@ function DashboardUsuario() {
       .catch((err) => console.error('Error al obtener procesos', err));
 
     // Obtener perfil del usuario
-  fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/accounts/profile', {
-      headers: {
-        Authorization: `Bearer ${auth.token}`,
-      },
-    })
+    fetch(
+      'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/accounts/profile',
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      }
+    )
       .then((res) => {
         if (!res.ok) throw new Error('Error al obtener perfil');
         return res.json();
@@ -95,14 +98,17 @@ function DashboardUsuario() {
       payload.password = formPerfil.password;
     }
 
-  fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/accounts/profile', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${auth.token}`,
-      },
-      body: JSON.stringify(payload),
-    })
+    fetch(
+      'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/accounts/profile',
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${auth.token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    )
       .then((res) => {
         if (!res.ok) throw new Error('Error al actualizar perfil');
         return res.json();

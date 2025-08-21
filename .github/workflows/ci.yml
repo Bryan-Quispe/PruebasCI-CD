@@ -1,6 +1,6 @@
 name: CI/CD Workflow
 
-on: 
+on:
   push:
     branches: [main]
   pull_request:
@@ -25,7 +25,7 @@ jobs:
         run: npm install
 
       - name: Run tests with coverage (Vitest)
-        run: npx vitest run --coverage 
+        run: npx vitest run --coverage
 
       - name: Upload coverage report frontend
         uses: actions/upload-artifact@v4
@@ -33,100 +33,18 @@ jobs:
           name: coverage-frontend
           path: frontend/coverage
 
-  build-frontend:
+  deploy-vercel:
     needs: frontend-tests
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Instalar dependencias
-        run: npm install
-
-      - name: Build del proyecto
-        run: npm run build
-
-      - name: Comprimir build para deploy
-        run: |
-          tar -czf build.tar.gz dist/
-          echo "Build comprimido creado"
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/build.tar.gz
-
-  deploy-prod:
-    needs: [frontend-tests, build-frontend]
     if: github.ref == 'refs/heads/main' && needs.frontend-tests.result == 'success'
     runs-on: ubuntu-latest
-    environment: Production
-    name: Deploy to Production
-    
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Descargar build
-        uses: actions/download-artifact@v4
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
         with:
-          name: frontend-build
-          path: .
-
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Verificar URL de deploy
-        run: |
-          if [ -z "${{ secrets.VERCEL_DEPLOY_URL }}" ]; then
-            echo "❌ ERROR: La URL de deploy no está configurada"
-            exit 1
-          else
-            echo "✅ URL de deploy encontrada"
-            echo "URL: ${{ secrets.VERCEL_DEPLOY_URL }}"
-          fi
-
-      - name: Descomprimir build
-        run: |
-          mkdir -p deploy-dist
-          tar -xzf frontend-build/build.tar.gz -C deploy-dist/
-          echo "Build descomprimido"
-
-      - name: Deploy usando la API de Vercel
-        run: |
-          echo "🚀 Iniciando deploy via API de Vercel..."
-          
-          # Crear un zip del directorio de build
-          cd deploy-dist
-          zip -r ../deploy.zip .
-          cd ..
-          
-          # Hacer el deploy usando la URL de integración
-          curl -f -X POST \
-            -H "Content-Type: application/zip" \
-            --data-binary "@deploy.zip" \
-            "${{ secrets.VERCEL_DEPLOY_URL }}"
-          
-          if [ $? -eq 0 ]; then
-            echo "✅ Deploy completado exitosamente via API"
-          else
-            echo "❌ Error en el deploy via API"
-            exit 1
-          fi
-
-      - name: Confirmación final
-        run: |
-          echo "🎉 FLUJO COMPLETADO EXITOSAMENTE"
-          echo "📋 CI: ✅ PASÓ"
-          echo "🚀 CD: ✅ DEPLOY COMPLETADO"  
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: bryans-projects-e27f49d2
+          vercel-project-id: pruebas-ci-cd
+          working-directory: frontend

@@ -26,11 +26,14 @@ export default function DashboardAbogada() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-  const response = await fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes/', {
-          headers: {
-            Authorization: `Bearer ${auth.token}`,
-          },
-        });
+        const response = await fetch(
+          'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes/',
+          {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error('Error al obtener los procesos');
@@ -50,14 +53,17 @@ export default function DashboardAbogada() {
 
   const createProcess = async () => {
     try {
-  const response = await fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProcess),
-      });
+      const response = await fetch(
+        'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newProcess),
+        }
+      );
 
       if (!response.ok) throw new Error('No se pudo crear el proceso');
 
@@ -72,9 +78,12 @@ export default function DashboardAbogada() {
         carton: '',
       });
 
-  const updated = await fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes/', {
-        headers: { Authorization: `Bearer ${auth.token}` },
-      });
+      const updated = await fetch(
+        'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes/',
+        {
+          headers: { Authorization: `Bearer ${auth.token}` },
+        }
+      );
       const data = await updated.json();
       setProcesses(data);
     } catch (err) {
@@ -103,9 +112,12 @@ export default function DashboardAbogada() {
       setEditProcessId(null);
       setEditProcessTitle('');
 
-  const res = await fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes/', {
-        headers: { Authorization: `Bearer ${auth.token}` },
-      });
+      const res = await fetch(
+        'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/processes/',
+        {
+          headers: { Authorization: `Bearer ${auth.token}` },
+        }
+      );
       const data = await res.json();
       setProcesses(data);
     } catch (err) {
@@ -159,17 +171,20 @@ export default function DashboardAbogada() {
 
   const createObservation = async (processId) => {
     try {
-  const response = await fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/observations', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          process_id: processId,
-          observation_text: newObservationText,
-        }),
-      });
+      const response = await fetch(
+        'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/observations',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            process_id: processId,
+            observation_text: newObservationText,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Error al crear la observación');
@@ -206,17 +221,20 @@ export default function DashboardAbogada() {
 
   const updateObservation = async (observationId, processId) => {
     try {
-  const response = await fetch('https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/observations', {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          observation_id: observationId,
-          observation_text: editObservationText,
-        }),
-      });
+      const response = await fetch(
+        'https://grupo6-lexdoc-pruebas-1hgg.onrender.com/api/observations',
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            observation_id: observationId,
+            observation_text: editObservationText,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Error al actualizar la observación');
