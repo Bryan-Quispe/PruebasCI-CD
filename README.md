@@ -1,1 +1,1 @@
-# PruebasCI-CD
+# Grupo6_LexDoc_Pruebas
