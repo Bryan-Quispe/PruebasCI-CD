@@ -33,3 +33,17 @@ jobs:
           name: coverage-frontend
           path: frontend/coverage
 
+  # Job de despliegue en producción (solo se ejecuta después de tests exitosos)
+  deploy-prod:
+    needs: frontend-tests
+    if: github.ref == 'refs/heads/main' && success()
+    runs-on: ubuntu-latest
+    environment: Production  # Referencia al entorno de GitHub
+    name: Deploy to Production
+    
+    steps:
+      - name: Trigger Vercel Deployment
+        run: |
+          echo "🚀 Desencadenando despliegue en Vercel..."
+          curl -s -X POST "${{ secrets.VERCEL_HOOK_PROD }}"
+          echo "✅ Solicitud de despliegue enviada correctamente"
