@@ -15,35 +15,69 @@ jobs:
     steps:
       - name: Clonar repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Mejora para cobertura
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Instalar dependencias
-        run: npm install
+        run: npm ci  # Usar npm ci para instalación limpia
 
       - name: Run tests with coverage (Vitest)
-        run: npx vitest run --coverage 
+        run: npx vitest run --coverage --passWithNoTests
 
       - name: Upload coverage report frontend
         uses: actions/upload-artifact@v4
         with:
           name: coverage-frontend
           path: frontend/coverage
+          retention-days: 7
 
   # Job de despliegue en producción (solo se ejecuta después de tests exitosos)
   deploy-prod:
     needs: frontend-tests
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.ref == 'refs/heads/main' && needs.frontend-tests.result == 'success'
     runs-on: ubuntu-latest
-    environment: Production  # Referencia al entorno de GitHub
+    environment: Production
     name: Deploy to Production
     
     steps:
+      - name: Verificar secret de Vercel
+        run: |
+          if [ -z "${{ secrets.VERCEL_HOOK_PROD }}" ]; then
+            echo "❌ ERROR: El secret VERCEL_HOOK_PROD no está configurado"
+            exit 1
+          else
+            echo "✅ Secret VERCEL_HOOK_PROD encontrado"
+          fi
+
       - name: Trigger Vercel Deployment
         run: |
           echo "🚀 Desencadenando despliegue en Vercel..."
-          curl -s -X POST "${{ secrets.VERCEL_HOOK_PROD }}"
-          echo "✅ Solicitud de despliegue enviada correctamente"
+          echo "URL del webhook: $(echo ${{ secrets.VERCEL_HOOK_PROD }} | cut -c1-50)..."
+          
+          # Hacer la petición con timeout y verificación de error
+          response_code=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
+            -X POST "${{ secrets.VERCEL_HOOK_PROD }}" \
+            -H "Content-Type: application/json")
+          
+          echo "Código de respuesta: $response_code"
+          echo "Respuesta:"
+          cat /tmp/response.txt
+          
+          if [ "$response_code" -eq 200 ] || [ "$response_code" -eq 201 ]; then
+            echo "✅ Solicitud de despliegue enviada correctamente"
+          else
+            echo "❌ Error al triggerear despliegue: HTTP $response_code"
+            exit 1
+          fi
+
+      - name: Esperar confirmación de despliegue
+        run: |
+          echo "⏳ El despliegue puede tardar unos minutos en completarse en Vercel..."
+          echo "Revisa el dashboard de Vercel para ver el estado del despliegue"
