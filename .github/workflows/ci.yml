@@ -47,5 +47,5 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ns-projects-e27f49d2
-          vercel-project-id: prj_u1ULv80imxFperBDGF9Sydv1n2bZ
+          vercel-project-id: frontend
           working-directory: frontend
