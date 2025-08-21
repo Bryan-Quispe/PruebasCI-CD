@@ -52,3 +52,12 @@ jobs:
           echo "🚀 Triggering deploy..."
           response=$(curl -s -w "%{http_code}" -X POST "${{ secrets.VERCEL_HOOK_PROD }}")
           echo "Response: HTTP $response"
+          if [ "$response" -ne 200 ]; then
+            echo "Deployment trigger failed with status $response"
+            exit 1
+      - name: Debug - Ver información
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Test result: ${{ needs.frontend-tests.result }}"
+          echo "Secret exists: ${{ secrets.VERCEL_HOOK_PROD != '' }}"
