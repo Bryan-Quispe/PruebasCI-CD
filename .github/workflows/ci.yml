@@ -46,6 +46,6 @@ jobs:
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ns-projects-e27f49d2
+          vercel-org-id: bryans-projects-e27f49d2
           vercel-project-id: frontend
           working-directory: frontend
