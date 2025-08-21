@@ -37,6 +37,7 @@ jobs:
     needs: frontend-tests
     if: github.ref == 'refs/heads/main' && needs.frontend-tests.result == 'success'
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
